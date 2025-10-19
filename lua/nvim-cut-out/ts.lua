@@ -10,9 +10,10 @@ local function rec_serialize_node(node, dest)
             table.insert(dest, tbl)
             rec_serialize_node(n, tbl)
         else
-            if f then
+            local expr_type = n:type()
+            if f or expr_type:find("content") then
                 table.insert(dest, {
-                    n:type(), vim_ts.get_node_text(n, 0)
+                    expr_type, vim_ts.get_node_text(n, 0)
                 })
             end
         end

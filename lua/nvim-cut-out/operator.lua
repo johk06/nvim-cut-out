@@ -91,9 +91,12 @@ local select_region = function(range)
         name = vim.fn.input(prompt)
     end
     local replacer = replacers[ft]
-    
+
     if assigners[ft] then
-        vim.fn.setreg(last_register, assigners[ft](name, last_node))
+        local assignment = assigners[ft](name, last_node)
+        if assignment then
+            vim.fn.setreg(last_register, assigners[ft](name, last_node))
+        end
     else
         vim.notify(("Cut Out: No assigner found for '%s'"):format(ft), vim.log.levels.WARN)
     end

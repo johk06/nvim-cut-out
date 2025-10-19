@@ -1,7 +1,7 @@
 local M = {}
 
 ---@alias cutout.replacer fun(name: string, replacement: TSNode, node: TSNode): string[]
----@alias cutout.assigner fun(name: string, replacement: TSNode): string[]
+---@alias cutout.assigner fun(name: string, replacement: TSNode): string[]?
 
 ---@class cutout.config
 ---@field keys string? Set to false to not create mappings
