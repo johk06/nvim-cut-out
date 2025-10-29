@@ -65,6 +65,11 @@ require("cut-out").operator()
 Change or set an entry inside the `opts.assigners` or `opts.replacers` table to a function.
 
 ## Fully Supported Languages (PRs welcome)
+Fully supported means:
+- The language's variable reference syntax is handled (this matters mostly for languages that use sigils, like `$var` in the shell)
+- Assignments can be generated automatically
+    - If this cannot be done, the replacement will still be performed but you need to type the declaration yourself
+
 | Language | Assigning | Custom Replacer
 |----------|-----------|-
 | C        | Partially[^1]| No
