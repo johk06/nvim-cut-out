@@ -2,9 +2,9 @@ local M = {}
 
 local vim_ts = vim.treesitter
 local api = vim.api
-local my_ts = require("nvim-cut-out.ts")
-local hlns = api.nvim_create_namespace("nvim-cut-out")
-local config = require("nvim-cut-out").options
+local my_ts = require("cut-out.ts")
+local hlns = api.nvim_create_namespace("cut-out")
+local config = require("cut-out").options
 local replacers = config.replacers
 local assigners = config.assigners
 

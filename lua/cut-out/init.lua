@@ -10,7 +10,7 @@ local M = {}
 ---@field replacers table<string, cutout.replacer>
 ---@field assigners table<string, cutout.assigner>
 
-local ft = require("nvim-cut-out.filetype")
+local ft = require("cut-out.filetype")
 
 ---@type cutout.config
 local options = {
@@ -35,7 +35,7 @@ M.setup = function(overrides)
 end
 
 M.operator = function()
-    vim.o.operatorfunc = "v:lua.require'nvim-cut-out.operator'.opfunc"
+    vim.o.operatorfunc = "v:lua.require'cut-out.operator'.opfunc"
     return "g@"
 end
 

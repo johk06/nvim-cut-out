@@ -17,23 +17,40 @@ M.assigners.c = function(name, replacement)
     local expr_type = replacement:type()
     local val = ts.get_node_text(replacement, 0)
     local text = vim.split(val, "\n")
-    local c_type = "auto"
-    if expr_type == "number_literal" then
-        local is_float = val:find("%.")
-        if is_float then
-            c_type = "double"
+    local c_type
+    if not name:find("%S%s+%S") then
+        if expr_type == "number_literal" then
+            local is_float = val:find("%.")
+            if is_float then
+                c_type = "double"
+            else
+                c_type = "int"
+            end
+        elseif expr_type == "string_literal" then
+            c_type = "const char*"
+        elseif expr_type == "sizeof_expression" then
+            c_type = "size_t"
         else
-            c_type = "int"
+            print(expr_type)
+            c_type = "auto"
         end
-    elseif expr_type == "string_literal" then
-        c_type = "const char*"
-    else
-        print(expr_type)
     end
 
-    text[1] = ("%s %s = %s"):format(c_type, name, text[1])
+    if c_type then
+        text[1] = ("%s %s = %s"):format(c_type, name, text[1])
+    else
+        text[1] = ("%s = %s"):format(name, text[1])
+    end
     text[#text] = text[#text] .. ";"
     return text
+end
+
+M.replacers.c = function(name, replacement, node)
+    local split = vim.split(name, " ")
+    local last = split[#split]
+    -- handle that way of declaring a pointer
+    local var = last:gsub("%s*%*", "")
+    return { var }
 end
 
 ---@type cutout.replacer
