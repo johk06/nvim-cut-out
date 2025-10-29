@@ -4,17 +4,21 @@ local vim_ts = vim.treesitter
 ---@param node TSNode
 ---@param dest table
 local function rec_serialize_node(node, dest)
-    for n, f in node:iter_children() do
-        if n:child_count() > 0 then
-            local tbl = { f, n:type() }
-            table.insert(dest, tbl)
-            rec_serialize_node(n, tbl)
-        else
-            local expr_type = n:type()
-            if f or expr_type:find("content") then
-                table.insert(dest, {
-                    expr_type, vim_ts.get_node_text(n, 0)
-                })
+    if node:child_count() == 0 then
+        if node:named() then
+            local expr_type = node:type()
+            table.insert(dest, {
+                expr_type, vim_ts.get_node_text(node, 0)
+            })
+        end
+    else
+        for n, f in node:iter_children() do
+            if n:child_count() > 0 then
+                local tbl = { f, n:type() }
+                table.insert(dest, tbl)
+                rec_serialize_node(n, tbl)
+            else
+                rec_serialize_node(n, dest)
             end
         end
     end
