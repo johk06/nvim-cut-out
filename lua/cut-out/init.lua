@@ -40,9 +40,4 @@ M.operator = function()
 end
 
 
-local f = function(array)
-    local var = array[1][1] + 1
-    local another = array[1][1] - 20
-end
-
 return M
