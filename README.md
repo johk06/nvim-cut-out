@@ -23,7 +23,7 @@ local f = function(array)
 end
 ```
 
-- with your cursor on `var` hit `coiW` (cut out inner WORD)
+- with your cursor on `array` hit `coiW` (cut out inner WORD)
 - type `ip` to replace the highlighted matches in the current paragraph
 - type `first<cr>` to select the name for your new variable
 - type `p` to paste the generated assignment
