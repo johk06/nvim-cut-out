@@ -28,37 +28,34 @@ M.lua = {
 }
 
 M.c = {
-    make_assignment = function(name, replacement)
-        local expr_type = replacement:type()
-        local text = get_text(replacement)
-        local c_type
-        if not name:find("%S%s+%S") then
-            if expr_type == "number_literal" then
-                local is_float = text[1]:find("%.")
-                if is_float then
-                    c_type = "double"
-                else
-                    c_type = "int"
-                end
-            elseif expr_type == "string_literal" then
-                c_type = "const char*"
-            elseif expr_type == "sizeof_expression" then
-                c_type = "size_t"
-            else
-                print(expr_type)
-                c_type = "auto"
-            end
-        end
+    suggest_name = function(node)
+        local expr_type = node:type()
+        local text = get_text(node)
 
-        if c_type then
-            text[1] = ("%s %s = %s"):format(c_type, name, text[1])
+        if expr_type == "number_literal" then
+            local is_float = text[1]:find("%.")
+            if is_float then
+                return "double "
+            else
+                return "int "
+            end
+        elseif expr_type == "string_literal" then
+            return "const char* "
+        elseif expr_type == "sizeof_expression" or text[1]:find("sizeof") then
+            return "size_t "
+        end
+    end,
+    make_assignment = function(name, replacement)
+        local text = get_text(replacement)
+
+        if not name:find("%S%s+%S") then
+            text[1] = ("auto %s = %s"):format(name, text[1])
         else
             text[1] = ("%s = %s"):format(name, text[1])
         end
         text[#text] = text[#text] .. ";"
         return text
     end,
-
     make_replacement = function(name, replacement, node)
         local split = vim.split(name, " ")
         local last = split[#split]

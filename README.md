@@ -48,22 +48,22 @@ require("lib.useful-module").func(1)
 ```
 
 - with your cursor on the beginning of the first line, type `coib`
-- type `2j` to apply to the whole file
+- type `2j` to apply to the whole block (in a real file, use `G`)
 - the name `useful_module` will be suggested
 - hit `<cr>` to accept it or edit it
-- paste the assignment at the beginning of the file
+- paste the assignment at the beginning of the block
 
 ### C Example
 ```c
-size_t bufsize = sizeof(struct some_struct) * size;
 some_struct* do_something(some_struct* s, size_t size) {
-    some_struct* s1 = malloc(bufsize);
-    some_struct* s2 = malloc(bufsize);
+    some_struct* s1 = malloc(sizeof(struct some_struct) * size);
+    some_struct* s2 = malloc(sizeof(struct some_struct) * size);
 }
 ```
 - with your cursor anywhere inside `malloc(...)` press `coi(` (cut-out inside parentheses)
 - press `a{` to change for the entire function
-- type `size_t bufsize<cr>` to specify the type and name
+- since the `sizeof` statement is included, the type `size_t` will be suggested
+- type `bufsize<cr>` to specify the type and name
 - press `p` to paste the generated declaration
 
 ## Configuration
@@ -97,7 +97,7 @@ Fully supported means:
 
 | Language | Assigning    | Custom Replacer | Name Suggestions |
 |----------|--------------|-----------------|-
-| C        | Partially[^1]| No              | No
+| C        | Partially[^1]| No              | Yes
 | Lua      | Supported    | No              | Yes
 | Shell[^2]| Supported    | Yes             | No
 | Python   | Supported    | No              | No
@@ -105,5 +105,6 @@ Fully supported means:
 [^1]: For typed languages it can be hard or impossible to get the type of an expression.
 Cut-Out will do it's best for constants, string literals etc, but it's best if you
 manually specify a type by just inputting the full declaration.
+Generally speaking the suggested type will be put as a part of the name suggestion.
 
 [^2]: `bash`, Plain `sh` and `zsh`
