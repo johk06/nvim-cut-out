@@ -5,8 +5,7 @@ local api = vim.api
 local my_ts = require("cut-out.ts")
 local hlns = api.nvim_create_namespace("cut-out")
 local config = require("cut-out").options
-local replacers = config.replacers
-local assigners = config.assigners
+local filetype = config.filetypes
 
 local function get_mark(mark)
     return api.nvim_buf_get_mark(0, mark)
@@ -83,19 +82,21 @@ local select_region = function(range)
     local matching = my_ts.find_matching_inside_node(last_node, containing_node, range)
 
     local ft = vim.bo.ft
-    local name
+    local for_ft = filetype[ft] or {}
     local prompt = config.prompt
-    if type(prompt) == "function" then
-        name = prompt(last_node)
-    else
-        name = vim.fn.input(prompt)
+    local default_name
+    if for_ft.suggest_name then
+        default_name = for_ft.suggest_name(last_node)
     end
-    local replacer = replacers[ft]
+    local name = vim.fn.input(prompt, default_name or "")
 
-    if assigners[ft] then
-        local assignment = assigners[ft](name, last_node)
+    local replacer = for_ft.make_replacement
+    local assigner = for_ft.make_assignment
+
+    if assigner then
+        local assignment = assigner(name, last_node)
         if assignment then
-            vim.fn.setreg(last_register, assigners[ft](name, last_node))
+            vim.fn.setreg(last_register, assigner(name, last_node))
         end
     else
         vim.notify(("Cut Out: No assigner found for '%s'"):format(ft), vim.log.levels.WARN)
