@@ -46,6 +46,11 @@ M.c = {
             else
                 return "int "
             end
+        elseif expr_type == "cast_expression" then
+            -- an explicit cast is one of the few situations where we know the type for certain
+            return ts.get_node_text(node:field("type")[1], 0) .. " "
+        elseif expr_type == "compound_literal_expression" then
+            return ts.get_node_text(node:field("type")[1], 0) .. " "
         elseif expr_type == "string_literal" then
             return "const char* "
         elseif expr_type == "sizeof_expression" or text[1]:find("sizeof") then
