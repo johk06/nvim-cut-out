@@ -63,7 +63,10 @@ local select_expr_to_cut = function(range)
     last_range = range
 
     local win_start, win_end = vim.fn.getpos("w0"), vim.fn.getpos("w$")
-    local winrange = { win_start[2] - 1, win_start[3], win_end[2] - 1, win_end[3], }
+    local winrange = {
+        win_start[2] - 1, win_start[3], win_end[2] - 1,
+        #api.nvim_buf_get_lines(0, win_end[2] -1, win_end[2], false)[1],
+    }
 
     local containing_node = my_ts.node_for_range(parser, winrange, range)
     local possible_matches = my_ts.find_matching_inside_node(node, containing_node, winrange)
