@@ -16,13 +16,20 @@ M.lua = {
         return text
     end,
     suggest_name = function(node)
-        local text = get_text(node)
-        if #text == 1 then
-            local module = text[1]:match [[^%s*require%(['"]([^'"]+)['"]%)%s*$]]
-            if module then
-                local path = vim.split(module, "[./]")
-                return (path[#path]:gsub("[-%.]", "_"))
+        local node_type = node:type()
+        if node_type == "function_call" then
+            -- for requires: default to the last element of the module name
+            if ts.get_node_text(node:field("name")[1], 0) == "require" then
+                local module = node:field("arguments")[1]:child(1)
+                if module and module:type() == "string" then
+                    local content = module:field("content")[1]
+                    local path = vim.split(ts.get_node_text(content, 0), "[./]")
+                    return (path[#path]:gsub("[-%.]", "_"))
+                end
             end
+        elseif node_type == "dot_index_expression" then
+            -- default to the field name
+            return ts.get_node_text(node:field("field")[1], 0)
         end
     end
 }
@@ -49,6 +56,7 @@ M.c = {
         local text = get_text(replacement)
 
         if not name:find("%S%s+%S") then
+            -- if we get no type, we need to do something
             text[1] = ("auto %s = %s"):format(name, text[1])
         else
             text[1] = ("%s = %s"):format(name, text[1])
