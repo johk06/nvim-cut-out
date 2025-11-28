@@ -34,10 +34,12 @@ local next_phase = "expression"
 local last_node
 ---@type string
 local last_register
+---@type Range4
+local last_range
 
 ---@param range Range4
 local select_expr_to_cut = function(range)
-    local parser = assert(vim_ts.get_parser(0))
+    local parser = assert(vim_ts.get_parser(0):language_for_range(range))
     local node = parser:node_for_range(range)
     if not node then
         return
@@ -45,10 +47,12 @@ local select_expr_to_cut = function(range)
     last_node = node
     next_phase = "target"
     last_register = vim.v.register
+    last_range = range
     local win_start, win_end = vim.fn.getpos("w0"), vim.fn.getpos("w$")
     local winrange = { win_start[2] - 1, win_start[3], win_end[2] - 1, win_end[3], }
+    local containing_node = my_ts.node_for_range(parser, winrange, range)
+    local possible_matches = my_ts.find_matching_inside_node(node, containing_node, winrange)
 
-    local possible_matches = my_ts.find_matching_inside_node(node, assert(parser:node_for_range(winrange)), winrange)
     for _, n in ipairs(possible_matches) do
         local srow, scol, erow, ecol = n:range()
         api.nvim_buf_set_extmark(0, hlns, srow, scol, {
@@ -70,7 +74,7 @@ end
 
 ---@param range Range4
 local select_region = function(range)
-    local parser = vim.treesitter.get_parser(0)
+    local parser = vim.treesitter.get_parser(0):language_for_range(last_range)
     if not last_node or not parser then
         return
     end
@@ -78,10 +82,10 @@ local select_region = function(range)
     -- force whole lines
     range[1] = 0
     range[4] = #api.nvim_buf_get_lines(0, range[3], range[3] + 1, false)[1]
-    local containing_node = assert(parser:node_for_range(range))
+    local containing_node = my_ts.node_for_range(parser, range, last_range)
     local matching = my_ts.find_matching_inside_node(last_node, containing_node, range)
 
-    local ft = vim.bo.ft
+    local ft = parser:lang()
     local for_ft = filetype[ft] or {}
     local prompt = config.prompt
     local default_name

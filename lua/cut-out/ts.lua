@@ -1,6 +1,13 @@
 local M = {}
 local vim_ts = vim.treesitter
 
+---@param parser vim.treesitter.LanguageTree
+---@param range1 Range4
+---@param range2 Range4
+M.node_for_range = function(parser, range1, range2)
+    return parser:node_for_range(range1) or parser:tree_for_range(range2):root()
+end
+
 ---@param node TSNode
 ---@param dest table
 local function rec_serialize_node(node, dest)
