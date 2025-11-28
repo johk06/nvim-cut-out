@@ -100,6 +100,7 @@ local select_region = function(mode, range)
     if last_aucmd then
         api.nvim_del_autocmd(last_aucmd)
         api.nvim_buf_clear_namespace(0, hlns, 0, -1)
+        vim.cmd.redraw()
         last_aucmd = nil
     end
     highlight_matching(matching, config.hl_group)
