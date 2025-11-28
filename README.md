@@ -24,6 +24,8 @@ or let your plugin manager handle the setup, for example by setting the `opts` f
 Use the `co` operator (by default) to **c**ut **o**ut text.
 A replacement will be put into the specified register (the unnamed register by default).
 
+All of the below examples can be tried in this buffer as long as you have the treesitter parsers for those languages installed.
+
 ### Lua Examples
 
 #### Factor out a reused expression
@@ -45,17 +47,18 @@ print(require("lib.useful-module"))
 require("lib.useful-module").func(1)
 ```
 
-- with your cursor on the beginning of the first line, type `coi(`
-- type `G` to apply to the whole file
+- with your cursor on the beginning of the first line, type `coib`
+- type `2j` to apply to the whole file
 - the name `useful_module` will be suggested
 - hit `<cr>` to accept it or edit it
 - paste the assignment at the beginning of the file
 
 ### C Example
 ```c
+size_t bufsize = sizeof(struct some_struct) * size;
 some_struct* do_something(some_struct* s, size_t size) {
-    some_struct* s1 = malloc(sizeof(struct some_struct) * size);
-    some_struct* s2 = malloc(sizeof(struct some_struct) * size);
+    some_struct* s1 = malloc(bufsize);
+    some_struct* s2 = malloc(bufsize);
 }
 ```
 - with your cursor anywhere inside `malloc(...)` press `coi(` (cut-out inside parentheses)
