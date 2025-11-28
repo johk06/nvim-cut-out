@@ -1,11 +1,12 @@
 ---@type table<string, cutout.filetype>
 local M = {}
 local ts = vim.treesitter
+local get_node_str = ts.get_node_text
 
 ---@param node TSNode
 ---@return string[]
 local get_text = function(node)
-    return vim.split(ts.get_node_text(node, 0), "\n")
+    return vim.split(get_node_str(node, 0), "\n")
 end
 
 M.lua = {
@@ -19,17 +20,17 @@ M.lua = {
         local node_type = node:type()
         if node_type == "function_call" then
             -- for requires: default to the last element of the module name
-            if ts.get_node_text(node:field("name")[1], 0) == "require" then
+            if get_node_str(node:field("name")[1], 0) == "require" then
                 local module = node:field("arguments")[1]:child(1)
                 if module and module:type() == "string" then
                     local content = module:field("content")[1]
-                    local path = vim.split(ts.get_node_text(content, 0), "[./]")
+                    local path = vim.split(get_node_str(content, 0), "[./]")
                     return (path[#path]:gsub("[-%.]", "_"))
                 end
             end
         elseif node_type == "dot_index_expression" then
             -- default to the field name
-            return ts.get_node_text(node:field("field")[1], 0)
+            return get_node_str(node:field("field")[1], 0)
         end
     end
 }
@@ -48,9 +49,9 @@ M.c = {
             end
         elseif expr_type == "cast_expression" then
             -- an explicit cast is one of the few situations where we know the type for certain
-            return ts.get_node_text(node:field("type")[1], 0) .. " "
+            return get_node_str(node:field("type")[1], 0) .. " "
         elseif expr_type == "compound_literal_expression" then
-            return ts.get_node_text(node:field("type")[1], 0) .. " "
+            return get_node_str(node:field("type")[1], 0) .. " "
         elseif expr_type == "string_literal" then
             return "const char* "
         elseif expr_type == "sizeof_expression" or text[1]:find("sizeof") then
