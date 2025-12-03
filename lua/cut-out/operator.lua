@@ -39,8 +39,6 @@ local function get_op_region(mode)
     }
 end
 
----@type "expression"|"target"
-local next_phase = "expression"
 ---@type TSNode
 local last_node
 ---@type string
@@ -58,14 +56,13 @@ local select_expr_to_cut = function(range)
         return
     end
     last_node = node
-    next_phase = "target"
     last_register = vim.v.register
     last_range = range
 
     local win_start, win_end = vim.fn.getpos("w0"), vim.fn.getpos("w$")
     local winrange = {
         win_start[2] - 1, win_start[3], win_end[2] - 1,
-        #api.nvim_buf_get_lines(0, win_end[2] -1, win_end[2], false)[1],
+        #api.nvim_buf_get_lines(0, win_end[2] - 1, win_end[2], false)[1],
     }
 
     local containing_node = my_ts.node_for_range(parser, winrange, range)
@@ -76,13 +73,13 @@ local select_expr_to_cut = function(range)
     last_aucmd = api.nvim_create_autocmd("SafeState", {
         once = true,
         callback = function()
-            next_phase = "expression"
             api.nvim_buf_clear_namespace(0, hlns, 0, -1)
             last_aucmd = nil
         end
     })
 
-    api.nvim_feedkeys("g@", "n", false)
+    vim.o.operatorfunc = "v:lua.require'cut-out.operator'.final_opfunc"
+    api.nvim_feedkeys("g@", "nt", false)
 end
 
 ---@param mode "line"|"char"
@@ -135,7 +132,6 @@ local select_region = function(mode, range)
         local replacement = replacer and replacer(name, last_node, node) or { name }
         api.nvim_buf_set_text(0, srow, scol, erow, ecol, replacement)
     end
-    next_phase = "expression"
     api.nvim_buf_clear_namespace(0, hlns, 0, -1)
 end
 
@@ -146,11 +142,12 @@ M.opfunc = function(mode)
     end
 
     local range = get_op_region(mode)
-    if next_phase == "expression" then
-        select_expr_to_cut(range)
-    else
-        select_region(mode, range)
-    end
+    select_expr_to_cut(range)
+end
+
+M.final_opfunc = function(mode)
+    local range = get_op_region(mode)
+    select_region(mode, range)
 end
 
 return M
