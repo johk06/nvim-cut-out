@@ -112,27 +112,28 @@ local select_region = function(mode, range)
     if for_ft.suggest_name then
         default_name = for_ft.suggest_name(last_node)
     end
-    local name = vim.fn.input(prompt, default_name or "")
 
-    local replacer = for_ft.make_replacement
-    local assigner = for_ft.make_assignment
+    vim.ui.input({ prompt = prompt, default = default_name }, function(name)
+        local replacer = for_ft.make_replacement
+        local assigner = for_ft.make_assignment
 
-    if assigner then
-        local assignment = assigner(name, last_node)
-        if assignment then
-            vim.fn.setreg(last_register, assigner(name, last_node))
+        if assigner then
+            local assignment = assigner(name, last_node)
+            if assignment then
+                vim.fn.setreg(last_register, assigner(name, last_node))
+            end
+        else
+            vim.notify(("Cut Out: No assigner found for '%s'"):format(ft), vim.log.levels.WARN)
         end
-    else
-        vim.notify(("Cut Out: No assigner found for '%s'"):format(ft), vim.log.levels.WARN)
-    end
 
-    -- operate bottom up to avoid disturbing the tree
-    for node in vim.iter(matching):rev() do
-        local srow, scol, erow, ecol = node:range()
-        local replacement = replacer and replacer(name, last_node, node) or { name }
-        api.nvim_buf_set_text(0, srow, scol, erow, ecol, replacement)
-    end
-    api.nvim_buf_clear_namespace(0, hlns, 0, -1)
+        -- operate bottom up to avoid disturbing the tree
+        for node in vim.iter(matching):rev() do
+            local srow, scol, erow, ecol = node:range()
+            local replacement = replacer and replacer(name, last_node, node) or { name }
+            api.nvim_buf_set_text(0, srow, scol, erow, ecol, replacement)
+        end
+        api.nvim_buf_clear_namespace(0, hlns, 0, -1)
+    end)
 end
 
 M.opfunc = function(mode)
