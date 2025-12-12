@@ -114,6 +114,11 @@ local select_region = function(mode, range)
     end
 
     vim.ui.input({ prompt = prompt, default = default_name }, function(name)
+        if not name then
+            api.nvim_buf_clear_namespace(0, hlns, 0, -1)
+            return
+        end
+
         local replacer = for_ft.make_replacement
         local assigner = for_ft.make_assignment
 
