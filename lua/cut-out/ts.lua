@@ -88,4 +88,11 @@ M.find_matching_inside_node = function(needle, haystack, range)
     return dest
 end
 
+---@param node TSNode
+---@return string[]
+M.get_text = function(node)
+    return vim.split(vim_ts.get_node_text(node, 0), "\n")
+end
+
+
 return M

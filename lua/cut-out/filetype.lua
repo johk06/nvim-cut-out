@@ -2,12 +2,8 @@
 local M = {}
 local ts = vim.treesitter
 local get_node_str = ts.get_node_text
-
----@param node TSNode
----@return string[]
-local get_text = function(node)
-    return vim.split(get_node_str(node, 0), "\n")
-end
+local my_ts = require("cut-out.ts")
+local get_text = my_ts.get_text
 
 M.lua = {
     make_assignment = function(name, replacement)
@@ -35,50 +31,8 @@ M.lua = {
     end
 }
 
-M.c = {
-    suggest_name = function(node)
-        local expr_type = node:type()
-        local text = get_text(node)
-
-        if expr_type == "number_literal" then
-            local is_float = text[1]:find("%.")
-            if is_float then
-                return "double "
-            else
-                return "int "
-            end
-        elseif expr_type == "cast_expression" then
-            -- an explicit cast is one of the few situations where we know the type for certain
-            return get_node_str(node:field("type")[1], 0) .. " "
-        elseif expr_type == "compound_literal_expression" then
-            return get_node_str(node:field("type")[1], 0) .. " "
-        elseif expr_type == "string_literal" then
-            return "const char* "
-        elseif expr_type == "sizeof_expression" or text[1]:find("sizeof") then
-            return "size_t "
-        end
-    end,
-    make_assignment = function(name, replacement)
-        local text = get_text(replacement)
-
-        if not name:find("%S%s+%S") then
-            -- if we get no type, we need to do something
-            text[1] = ("auto %s = %s"):format(name, text[1])
-        else
-            text[1] = ("%s = %s"):format(name, text[1])
-        end
-        text[#text] = text[#text] .. ";"
-        return text
-    end,
-    make_replacement = function(name, replacement, node)
-        local split = vim.split(name, " ")
-        local last = split[#split]
-        -- handle that way of declaring a pointer
-        local var = last:gsub("%s*%*", "")
-        return { var }
-    end
-}
-
+local ft_c = require("cut-out.filetypes.c")
+M.c = ft_c
 M.python = {
     make_assignment = function(name, replacement)
         local text = get_text(replacement)
@@ -107,5 +61,12 @@ M.bash = sh_type_languages
 M.sh = sh_type_languages
 M.zsh = sh_type_languages
 
+M.typst = {
+    make_assignment = function(name, replacement)
+        local text = get_text(replacement)
+        text[1] = ("let %s = %s"):format(name, text[1])
+        return text
+    end
+}
 
 return M
