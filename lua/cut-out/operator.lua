@@ -4,6 +4,7 @@ local vim_ts = vim.treesitter
 local api = vim.api
 local my_ts = require("cut-out.ts")
 local hlns = api.nvim_create_namespace("cut-out")
+---@type cutout.config
 local config = require("cut-out").options
 local filetype = config.filetypes
 
@@ -69,6 +70,9 @@ local select_expr_to_cut = function(range)
     local possible_matches = my_ts.find_matching_inside_node(node, containing_node, winrange)
 
     highlight_matching(possible_matches, config.hl_group)
+    if config.on_found then
+        config.on_found(possible_matches, containing_node)
+    end
 
     last_aucmd = api.nvim_create_autocmd("SafeState", {
         once = true,
